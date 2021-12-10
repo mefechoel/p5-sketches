@@ -32,7 +32,7 @@ function sketch(p: p5) {
 				const i = (x + y * img.width) * 4;
 				const grayscale =
 					(img.pixels[i] + img.pixels[i + 1] + img.pixels[i + 2]) / 3;
-				const precision = 4;
+				const precision = 2;
 				const squashedGrayscale =
 					(Math.floor((grayscale / 256) * precision) / precision) * 256;
 				c.push(squashedGrayscale);
@@ -44,16 +44,20 @@ function sketch(p: p5) {
 				const gt = c[x + (y - 1) * img.width];
 				const gl = c[x - 1 + y * img.width];
 				const gtl = c[x - 1 + (y - 1) * img.width];
-				if (g0 !== gt || g0 !== gl || g0 !== gtl) {
+				if (0.75 < p.random(1) && (g0 !== gt || g0 !== gl || g0 !== gtl)) {
 					v.push(p.createVector(x, y));
 				}
 			}
 		}
 
+		img.resize(p.width, 0);
+		// img.filter(p.POSTERIZE, 2);
+		p.image(img, 0, 0, p.width, p.height);
+
 		for (const pv of v) {
 			p.stroke(0);
-			p.strokeWeight(2);
-			p.point(pv.x * 6, pv.y * 6);
+			p.strokeWeight(6);
+			p.point(pv.x * (p.width / w), pv.y * (p.width / w));
 		}
 
 		return;

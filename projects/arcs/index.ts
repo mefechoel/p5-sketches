@@ -1,10 +1,13 @@
 import p5 from "p5";
+import { extractEdgePoints } from "../util";
+import imgPath from "./mountain.jpg";
 
 type PVector = p5.Vector;
 
 const NUM_POINTS = 100;
 let points: p5.Vector[];
 const seed = 72;
+let img: p5.Image;
 
 function sketch(p: p5) {
 	const drawPoints = (list: PVector[]) => {
@@ -105,6 +108,11 @@ function sketch(p: p5) {
 		}
 	};
 
+	p.preload = () => {
+		// load the original image
+		img = p.loadImage(imgPath);
+	};
+
 	p.setup = () => {
 		p.createCanvas(1200, 800);
 		p.noLoop();
@@ -114,13 +122,19 @@ function sketch(p: p5) {
 		p.background(255);
 		p.randomSeed(seed);
 
-		points = new Array<p5.Vector>(NUM_POINTS);
+		const w = 100;
+		img.resize(w, 0);
+		img.loadPixels();
+		const po = extractEdgePoints(img.pixels, img.width, img.height);
+		const ep = po.map(({ x, y }) => p.createVector(x, y));
+
+		points = ep; // new Array<p5.Vector>(NUM_POINTS);
 		// img.resize(width, height);
 		// img.loadPixels();
-		for (let i = 0; i < points.length; i++) {
-			// points[i] = new PVector(random(width), random(height));
-			points[i] = p.createVector(p.random(1) * p.width, p.random(1) * p.height);
-		}
+		// for (let i = 0; i < points.length; i++) {
+		// 	// points[i] = new PVector(random(width), random(height));
+		// 	points[i] = p.createVector(p.random(1) * p.width, p.random(1) * p.height);
+		// }
 
 		const visited = new Set();
 		const sorted: PVector[] = [];
