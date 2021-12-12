@@ -1,11 +1,15 @@
 import p5 from "p5";
-import { extractEdgePoints } from "../util";
+import {
+	dropOut,
+	dropOutRandom,
+	extractEdgePoints,
+	sortByDistance2d,
+} from "../util";
 import imgPath from "./mountain.jpg";
 
 type PVector = p5.Vector;
 
 const NUM_POINTS = 100;
-let points: p5.Vector[];
 const seed = 72;
 let img: p5.Image;
 
@@ -26,12 +30,11 @@ function sketch(p: p5) {
 		p.noFill();
 		p.beginShape();
 		const l = list.length;
-		for (let i = 0; i <= l; i++) {
+		for (let i = 0; i < l; i++) {
 			const p0 = list[(l + i + 0) % l];
 			p.curveVertex(p0.x, p0.y);
 		}
-		// p.curveVertex(list[0].x, list[0].y);
-		p.endShape(p.CLOSE);
+		p.endShape();
 	};
 
 	const drawPipes = (list: PVector[]) => {
@@ -114,7 +117,7 @@ function sketch(p: p5) {
 	};
 
 	p.setup = () => {
-		p.createCanvas(1200, 800);
+		p.createCanvas(900, 900);
 		p.noLoop();
 	};
 
@@ -122,60 +125,23 @@ function sketch(p: p5) {
 		p.background(255);
 		p.randomSeed(seed);
 
-		const w = 100;
+		const w = 200;
 		img.resize(w, 0);
 		img.loadPixels();
-		const po = extractEdgePoints(img.pixels, img.width, img.height);
-		const ep = po.map(({ x, y }) => p.createVector(x, y));
 
-		points = ep; // new Array<p5.Vector>(NUM_POINTS);
-		// img.resize(width, height);
-		// img.loadPixels();
-		// for (let i = 0; i < points.length; i++) {
-		// 	// points[i] = new PVector(random(width), random(height));
-		// 	points[i] = p.createVector(p.random(1) * p.width, p.random(1) * p.height);
-		// }
+		const points = extractEdgePoints(img.pixels, img.width, img.height, 4);
+		const wScale = p.width / img.width;
+		const hScale = p.height / img.height;
+		const sorted = sortByDistance2d(points).map(({ x, y }) =>
+			p.createVector(x * wScale, y * hScale),
+		);
 
-		const visited = new Set();
-		const sorted: PVector[] = [];
-		const i = 0;
-		let point = points[i];
-
-		while (visited.size < points.length) {
-			let closestDist = p.width * p.height;
-			// let closestI = -1;
-			let closest: PVector | null = null;
-
-			for (let j = 0; j < points.length; j++) {
-				if (j != i && !visited.has(points[j])) {
-					const dist = point.dist(points[j]);
-					if (dist < closestDist) {
-						closest = points[j];
-						closestDist = dist;
-						// closestI = j;
-					}
-				}
-			}
-
-			// drawConnection(point, closest);
-			if (!visited.has(point)) {
-				sorted.push(point);
-			}
-			visited.add(point);
-			point = closest as PVector;
-			// println("count: "+count++ + ", " + visited.size() + ", " + sorted.size() + ", " + point);
-		}
-		// drawConnection(point, points[0]);
-
-		console.log("points.length: " + points.length);
-		console.log("sorted.size: " + sorted.length);
-		console.log("visited.size: " + visited.size);
-
-		// drawBezier(sorted);
-		// drawPipes(sorted);
-		drawCurve(sorted);
-		// drawPoints(sorted);
-		// drawLines(sorted);
+		const s = dropOutRandom(sorted, 0.3);
+		// drawBezier(s);
+		drawPipes(s);
+		// drawCurve(s);
+		// drawPoints(s);
+		// drawLines(s);
 	};
 
 	p.mousePressed = () => {
