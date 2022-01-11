@@ -1,22 +1,26 @@
 import type p5 from "p5";
+import { sqDist } from "../util";
+import type { Point } from "../util/types";
 
 export function createDrawingFunctions(p: p5, maxDistance: number) {
-	const drawPoints = (list: p5.Vector[]) => {
+	const sqMaxDistance = maxDistance * maxDistance;
+
+	const drawPoints = (list: Point[]) => {
 		const l = list.length;
 		for (let i = 0; i < l; i++) {
-			const p0 = list[(l + i + 0) % l];
+			const p0 = list[i];
 			p.point(p0.x, p0.y);
 		}
 	};
 
-	const drawCurve = (list: p5.Vector[]) => {
+	const drawCurve = (list: Point[]) => {
 		p.noFill();
 		p.beginShape();
 		const l = list.length;
 		for (let i = 0; i < l; i++) {
-			const p0 = list[(l + i + 0) % l];
+			const p0 = list[i];
 			p.curveVertex(p0.x, p0.y);
-			if (i !== 0 && p0.dist(list[i - 1]) >= maxDistance) {
+			if (i !== l - 1 && sqDist(p0, list[i + 1]) >= sqMaxDistance) {
 				p.endShape();
 				p.beginShape();
 			}
@@ -24,32 +28,41 @@ export function createDrawingFunctions(p: p5, maxDistance: number) {
 		p.endShape();
 	};
 
-	const drawPipes = (list: p5.Vector[]) => {
+	const drawPipes = (list: Point[]) => {
+		p.noFill();
+		p.beginShape();
 		const l = list.length;
-		for (let i = 0; i < l; i++) {
-			const p0 = list[(l + i + 0) % l];
-			const p1 = list[(l + i + 1) % l];
-			if (p0.dist(p1) < maxDistance) {
+		for (let i = 0; i < l - 1; i++) {
+			const p0 = list[i];
+			const p1 = list[i + 1];
+			p.vertex(p0.x, p0.y);
+			if (sqDist(p0, p1) >= sqMaxDistance) {
+				p.endShape();
+				p.beginShape();
+			} else {
 				if (p.random(1) < 0.5) {
-					p.line(p0.x, p0.y, p0.x, p1.y);
-					p.line(p0.x, p1.y, p1.x, p1.y);
+					p.vertex(p0.x, p1.y);
 				} else {
-					p.line(p1.x, p1.y, p1.x, p0.y);
-					p.line(p1.x, p0.y, p0.x, p0.y);
+					p.vertex(p1.x, p0.y);
 				}
 			}
 		}
+		p.endShape();
 	};
 
-	const drawLines = (list: p5.Vector[]) => {
+	const drawLines = (list: Point[]) => {
+		p.noFill();
+		p.beginShape();
 		const l = list.length;
 		for (let i = 0; i < l; i++) {
-			const p0 = list[(l + i + 0) % l];
-			const p1 = list[(l + i + 1) % l];
-			if (p0.dist(p1) < maxDistance) {
-				p.line(p0.x, p0.y, p1.x, p1.y);
+			const p0 = list[i];
+			p.vertex(p0.x, p0.y);
+			if (i !== l - 1 && sqDist(p0, list[i + 1]) >= sqMaxDistance) {
+				p.endShape();
+				p.beginShape();
 			}
 		}
+		p.endShape();
 	};
 
 	const drawBezier = (list: p5.Vector[]) => {

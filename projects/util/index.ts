@@ -63,6 +63,7 @@ export function sortByDistance2d(
 	minSize = 4,
 	capacity = 32,
 ): Point[] {
+	if (points.length <= 2) return points.map((x) => x);
 	const qt = new QuadTree(new Rectangle(w / 2, h / 2, w, h), capacity);
 	points.forEach((p) => qt.insert(p));
 	const sorted: Point[] = [];

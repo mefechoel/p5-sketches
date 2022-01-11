@@ -32,8 +32,7 @@ const indexHtml = `
 </html>
 `;
 
-const indexTs = `
-import p5 from "p5";
+const indexTs = `import p5 from "p5";
 
 function sketch(p: p5) {
 	const x = 100;
